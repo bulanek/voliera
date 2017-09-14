@@ -1,0 +1,603 @@
+                                      1 ;--------------------------------------------------------
+                                      2 ; File Created by SDCC : free open source ANSI-C Compiler
+                                      3 ; Version 3.6.0 #9615 (Linux)
+                                      4 ;--------------------------------------------------------
+                                      5 	.module stm8s_gpio
+                                      6 	.optsdcc -mmcs51 --model-small
+                                      7 	
+                                      8 ;--------------------------------------------------------
+                                      9 ; Public variables in this module
+                                     10 ;--------------------------------------------------------
+                                     11 	.globl _GPIO_ExternalPullUpConfig_PARM_3
+                                     12 	.globl _GPIO_ExternalPullUpConfig_PARM_2
+                                     13 	.globl _GPIO_ReadInputPin_PARM_2
+                                     14 	.globl _GPIO_WriteReverse_PARM_2
+                                     15 	.globl _GPIO_WriteLow_PARM_2
+                                     16 	.globl _GPIO_WriteHigh_PARM_2
+                                     17 	.globl _GPIO_Write_PARM_2
+                                     18 	.globl _GPIO_Init_PARM_3
+                                     19 	.globl _GPIO_Init_PARM_2
+                                     20 	.globl _GPIO_DeInit
+                                     21 	.globl _GPIO_Init
+                                     22 	.globl _GPIO_Write
+                                     23 	.globl _GPIO_WriteHigh
+                                     24 	.globl _GPIO_WriteLow
+                                     25 	.globl _GPIO_WriteReverse
+                                     26 	.globl _GPIO_ReadOutputData
+                                     27 	.globl _GPIO_ReadInputData
+                                     28 	.globl _GPIO_ReadInputPin
+                                     29 	.globl _GPIO_ExternalPullUpConfig
+                                     30 ;--------------------------------------------------------
+                                     31 ; special function registers
+                                     32 ;--------------------------------------------------------
+                                     33 	.area RSEG    (ABS,DATA)
+      000000                         34 	.org 0x0000
+                                     35 ;--------------------------------------------------------
+                                     36 ; special function bits
+                                     37 ;--------------------------------------------------------
+                                     38 	.area RSEG    (ABS,DATA)
+      000000                         39 	.org 0x0000
+                                     40 ;--------------------------------------------------------
+                                     41 ; overlayable register banks
+                                     42 ;--------------------------------------------------------
+                                     43 	.area REG_BANK_0	(REL,OVR,DATA)
+      000000                         44 	.ds 8
+                                     45 ;--------------------------------------------------------
+                                     46 ; internal ram data
+                                     47 ;--------------------------------------------------------
+                                     48 	.area DSEG    (DATA)
+                                     49 ;--------------------------------------------------------
+                                     50 ; overlayable items in internal ram 
+                                     51 ;--------------------------------------------------------
+                                     52 	.area	OSEG    (OVR,DATA)
+                                     53 	.area	OSEG    (OVR,DATA)
+      000000                         54 _GPIO_Init_PARM_2:
+      000000                         55 	.ds 1
+      000001                         56 _GPIO_Init_PARM_3:
+      000001                         57 	.ds 1
+      000002                         58 _GPIO_Init_GPIOx_1_309:
+      000002                         59 	.ds 3
+                                     60 	.area	OSEG    (OVR,DATA)
+      000000                         61 _GPIO_Write_PARM_2:
+      000000                         62 	.ds 1
+                                     63 	.area	OSEG    (OVR,DATA)
+      000000                         64 _GPIO_WriteHigh_PARM_2:
+      000000                         65 	.ds 1
+                                     66 	.area	OSEG    (OVR,DATA)
+      000000                         67 _GPIO_WriteLow_PARM_2:
+      000000                         68 	.ds 1
+                                     69 	.area	OSEG    (OVR,DATA)
+      000000                         70 _GPIO_WriteReverse_PARM_2:
+      000000                         71 	.ds 1
+                                     72 	.area	OSEG    (OVR,DATA)
+                                     73 	.area	OSEG    (OVR,DATA)
+                                     74 	.area	OSEG    (OVR,DATA)
+      000000                         75 _GPIO_ReadInputPin_PARM_2:
+      000000                         76 	.ds 1
+                                     77 	.area	OSEG    (OVR,DATA)
+      000000                         78 _GPIO_ExternalPullUpConfig_PARM_2:
+      000000                         79 	.ds 1
+      000001                         80 _GPIO_ExternalPullUpConfig_PARM_3:
+      000001                         81 	.ds 1
+                                     82 ;--------------------------------------------------------
+                                     83 ; indirectly addressable internal ram data
+                                     84 ;--------------------------------------------------------
+                                     85 	.area ISEG    (DATA)
+                                     86 ;--------------------------------------------------------
+                                     87 ; absolute internal ram data
+                                     88 ;--------------------------------------------------------
+                                     89 	.area IABS    (ABS,DATA)
+                                     90 	.area IABS    (ABS,DATA)
+                                     91 ;--------------------------------------------------------
+                                     92 ; bit data
+                                     93 ;--------------------------------------------------------
+                                     94 	.area BSEG    (BIT)
+                                     95 ;--------------------------------------------------------
+                                     96 ; paged external ram data
+                                     97 ;--------------------------------------------------------
+                                     98 	.area PSEG    (PAG,XDATA)
+                                     99 ;--------------------------------------------------------
+                                    100 ; external ram data
+                                    101 ;--------------------------------------------------------
+                                    102 	.area XSEG    (XDATA)
+                                    103 ;--------------------------------------------------------
+                                    104 ; absolute external ram data
+                                    105 ;--------------------------------------------------------
+                                    106 	.area XABS    (ABS,XDATA)
+                                    107 ;--------------------------------------------------------
+                                    108 ; external initialized ram data
+                                    109 ;--------------------------------------------------------
+                                    110 	.area XISEG   (XDATA)
+                                    111 	.area HOME    (CODE)
+                                    112 	.area GSINIT0 (CODE)
+                                    113 	.area GSINIT1 (CODE)
+                                    114 	.area GSINIT2 (CODE)
+                                    115 	.area GSINIT3 (CODE)
+                                    116 	.area GSINIT4 (CODE)
+                                    117 	.area GSINIT5 (CODE)
+                                    118 	.area GSINIT  (CODE)
+                                    119 	.area GSFINAL (CODE)
+                                    120 	.area CSEG    (CODE)
+                                    121 ;--------------------------------------------------------
+                                    122 ; global & static initialisations
+                                    123 ;--------------------------------------------------------
+                                    124 	.area HOME    (CODE)
+                                    125 	.area GSINIT  (CODE)
+                                    126 	.area GSFINAL (CODE)
+                                    127 	.area GSINIT  (CODE)
+                                    128 ;--------------------------------------------------------
+                                    129 ; Home
+                                    130 ;--------------------------------------------------------
+                                    131 	.area HOME    (CODE)
+                                    132 	.area HOME    (CODE)
+                                    133 ;--------------------------------------------------------
+                                    134 ; code
+                                    135 ;--------------------------------------------------------
+                                    136 	.area CSEG    (CODE)
+                                    137 ;------------------------------------------------------------
+                                    138 ;Allocation info for local variables in function 'GPIO_DeInit'
+                                    139 ;------------------------------------------------------------
+                                    140 ;GPIOx                     Allocated to registers r5 r6 r7 
+                                    141 ;------------------------------------------------------------
+                                    142 ;	../../src/stm8s_gpio.c:53: void GPIO_DeInit(GPIO_TypeDef* GPIOx)
+                                    143 ;	-----------------------------------------
+                                    144 ;	 function GPIO_DeInit
+                                    145 ;	-----------------------------------------
+      000000                        146 _GPIO_DeInit:
+                           000007   147 	ar7 = 0x07
+                           000006   148 	ar6 = 0x06
+                           000005   149 	ar5 = 0x05
+                           000004   150 	ar4 = 0x04
+                           000003   151 	ar3 = 0x03
+                           000002   152 	ar2 = 0x02
+                           000001   153 	ar1 = 0x01
+                           000000   154 	ar0 = 0x00
+                                    155 ;	../../src/stm8s_gpio.c:55: GPIOx->ODR = GPIO_ODR_RESET_VALUE; /* Reset Output Data Register */
+      000000 AD 82            [24]  156 	mov	r5,dpl
+      000002 AE 83            [24]  157 	mov	r6,dph
+      000004 AF F0            [24]  158 	mov	r7,b
+      000006 E4               [12]  159 	clr	a
+      000007 12r00r00         [24]  160 	lcall	__gptrput
+                                    161 ;	../../src/stm8s_gpio.c:56: GPIOx->DDR = GPIO_DDR_RESET_VALUE; /* Reset Data Direction Register */
+      00000A 74 02            [12]  162 	mov	a,#0x02
+      00000C 2D               [12]  163 	add	a,r5
+      00000D FA               [12]  164 	mov	r2,a
+      00000E E4               [12]  165 	clr	a
+      00000F 3E               [12]  166 	addc	a,r6
+      000010 FB               [12]  167 	mov	r3,a
+      000011 8F 04            [24]  168 	mov	ar4,r7
+      000013 8A 82            [24]  169 	mov	dpl,r2
+      000015 8B 83            [24]  170 	mov	dph,r3
+      000017 8C F0            [24]  171 	mov	b,r4
+      000019 E4               [12]  172 	clr	a
+      00001A 12r00r00         [24]  173 	lcall	__gptrput
+                                    174 ;	../../src/stm8s_gpio.c:57: GPIOx->CR1 = GPIO_CR1_RESET_VALUE; /* Reset Control Register 1 */
+      00001D 74 03            [12]  175 	mov	a,#0x03
+      00001F 2D               [12]  176 	add	a,r5
+      000020 FA               [12]  177 	mov	r2,a
+      000021 E4               [12]  178 	clr	a
+      000022 3E               [12]  179 	addc	a,r6
+      000023 FB               [12]  180 	mov	r3,a
+      000024 8F 04            [24]  181 	mov	ar4,r7
+      000026 8A 82            [24]  182 	mov	dpl,r2
+      000028 8B 83            [24]  183 	mov	dph,r3
+      00002A 8C F0            [24]  184 	mov	b,r4
+      00002C E4               [12]  185 	clr	a
+      00002D 12r00r00         [24]  186 	lcall	__gptrput
+                                    187 ;	../../src/stm8s_gpio.c:58: GPIOx->CR2 = GPIO_CR2_RESET_VALUE; /* Reset Control Register 2 */
+      000030 74 04            [12]  188 	mov	a,#0x04
+      000032 2D               [12]  189 	add	a,r5
+      000033 FD               [12]  190 	mov	r5,a
+      000034 E4               [12]  191 	clr	a
+      000035 3E               [12]  192 	addc	a,r6
+      000036 FE               [12]  193 	mov	r6,a
+      000037 8D 82            [24]  194 	mov	dpl,r5
+      000039 8E 83            [24]  195 	mov	dph,r6
+      00003B 8F F0            [24]  196 	mov	b,r7
+      00003D E4               [12]  197 	clr	a
+      00003E 02r00r00         [24]  198 	ljmp	__gptrput
+                                    199 ;------------------------------------------------------------
+                                    200 ;Allocation info for local variables in function 'GPIO_Init'
+                                    201 ;------------------------------------------------------------
+                                    202 ;GPIO_Pin                  Allocated with name '_GPIO_Init_PARM_2'
+                                    203 ;GPIO_Mode                 Allocated with name '_GPIO_Init_PARM_3'
+                                    204 ;GPIOx                     Allocated with name '_GPIO_Init_GPIOx_1_309'
+                                    205 ;------------------------------------------------------------
+                                    206 ;	../../src/stm8s_gpio.c:71: void GPIO_Init(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef GPIO_Pin, GPIO_Mode_TypeDef GPIO_Mode)
+                                    207 ;	-----------------------------------------
+                                    208 ;	 function GPIO_Init
+                                    209 ;	-----------------------------------------
+      000041                        210 _GPIO_Init:
+      000041 85 82*02         [24]  211 	mov	_GPIO_Init_GPIOx_1_309,dpl
+      000044 85 83*03         [24]  212 	mov	(_GPIO_Init_GPIOx_1_309 + 1),dph
+      000047 85 F0*04         [24]  213 	mov	(_GPIO_Init_GPIOx_1_309 + 2),b
+                                    214 ;	../../src/stm8s_gpio.c:81: GPIOx->CR2 &= (uint8_t)(~(GPIO_Pin));
+      00004A 74 04            [12]  215 	mov	a,#0x04
+      00004C 25*02            [12]  216 	add	a,_GPIO_Init_GPIOx_1_309
+      00004E FA               [12]  217 	mov	r2,a
+      00004F E4               [12]  218 	clr	a
+      000050 35*03            [12]  219 	addc	a,(_GPIO_Init_GPIOx_1_309 + 1)
+      000052 FB               [12]  220 	mov	r3,a
+      000053 AC*04            [24]  221 	mov	r4,(_GPIO_Init_GPIOx_1_309 + 2)
+      000055 8A 82            [24]  222 	mov	dpl,r2
+      000057 8B 83            [24]  223 	mov	dph,r3
+      000059 8C F0            [24]  224 	mov	b,r4
+      00005B 12r00r00         [24]  225 	lcall	__gptrget
+      00005E F9               [12]  226 	mov	r1,a
+      00005F E5*00            [12]  227 	mov	a,_GPIO_Init_PARM_2
+      000061 F4               [12]  228 	cpl	a
+      000062 F8               [12]  229 	mov	r0,a
+      000063 52 01            [12]  230 	anl	ar1,a
+      000065 8A 82            [24]  231 	mov	dpl,r2
+      000067 8B 83            [24]  232 	mov	dph,r3
+      000069 8C F0            [24]  233 	mov	b,r4
+      00006B E9               [12]  234 	mov	a,r1
+      00006C 12r00r00         [24]  235 	lcall	__gptrput
+                                    236 ;	../../src/stm8s_gpio.c:87: if ((((uint8_t)(GPIO_Mode)) & (uint8_t)0x80) != (uint8_t)0x00) /* Output mode */
+      00006F E5*01            [12]  237 	mov	a,_GPIO_Init_PARM_3
+      000071 30 E7 67         [24]  238 	jnb	acc.7,00105$
+                                    239 ;	../../src/stm8s_gpio.c:89: if ((((uint8_t)(GPIO_Mode)) & (uint8_t)0x10) != (uint8_t)0x00) /* High level */
+      000074 E5*01            [12]  240 	mov	a,_GPIO_Init_PARM_3
+      000076 30 E4 20         [24]  241 	jnb	acc.4,00102$
+                                    242 ;	../../src/stm8s_gpio.c:91: GPIOx->ODR |= (uint8_t)GPIO_Pin;
+      000079 85*02 82         [24]  243 	mov	dpl,_GPIO_Init_GPIOx_1_309
+      00007C 85*03 83         [24]  244 	mov	dph,(_GPIO_Init_GPIOx_1_309 + 1)
+      00007F 85*04 F0         [24]  245 	mov	b,(_GPIO_Init_GPIOx_1_309 + 2)
+      000082 12r00r00         [24]  246 	lcall	__gptrget
+      000085 F9               [12]  247 	mov	r1,a
+      000086 E5*00            [12]  248 	mov	a,_GPIO_Init_PARM_2
+      000088 42 01            [12]  249 	orl	ar1,a
+      00008A 85*02 82         [24]  250 	mov	dpl,_GPIO_Init_GPIOx_1_309
+      00008D 85*03 83         [24]  251 	mov	dph,(_GPIO_Init_GPIOx_1_309 + 1)
+      000090 85*04 F0         [24]  252 	mov	b,(_GPIO_Init_GPIOx_1_309 + 2)
+      000093 E9               [12]  253 	mov	a,r1
+      000094 12r00r00         [24]  254 	lcall	__gptrput
+      000097 80 1D            [24]  255 	sjmp	00103$
+      000099                        256 00102$:
+                                    257 ;	../../src/stm8s_gpio.c:95: GPIOx->ODR &= (uint8_t)(~(GPIO_Pin));
+      000099 85*02 82         [24]  258 	mov	dpl,_GPIO_Init_GPIOx_1_309
+      00009C 85*03 83         [24]  259 	mov	dph,(_GPIO_Init_GPIOx_1_309 + 1)
+      00009F 85*04 F0         [24]  260 	mov	b,(_GPIO_Init_GPIOx_1_309 + 2)
+      0000A2 12r00r00         [24]  261 	lcall	__gptrget
+      0000A5 F9               [12]  262 	mov	r1,a
+      0000A6 E8               [12]  263 	mov	a,r0
+      0000A7 52 01            [12]  264 	anl	ar1,a
+      0000A9 85*02 82         [24]  265 	mov	dpl,_GPIO_Init_GPIOx_1_309
+      0000AC 85*03 83         [24]  266 	mov	dph,(_GPIO_Init_GPIOx_1_309 + 1)
+      0000AF 85*04 F0         [24]  267 	mov	b,(_GPIO_Init_GPIOx_1_309 + 2)
+      0000B2 E9               [12]  268 	mov	a,r1
+      0000B3 12r00r00         [24]  269 	lcall	__gptrput
+      0000B6                        270 00103$:
+                                    271 ;	../../src/stm8s_gpio.c:98: GPIOx->DDR |= (uint8_t)GPIO_Pin;
+      0000B6 74 02            [12]  272 	mov	a,#0x02
+      0000B8 25*02            [12]  273 	add	a,_GPIO_Init_GPIOx_1_309
+      0000BA F9               [12]  274 	mov	r1,a
+      0000BB E4               [12]  275 	clr	a
+      0000BC 35*03            [12]  276 	addc	a,(_GPIO_Init_GPIOx_1_309 + 1)
+      0000BE FE               [12]  277 	mov	r6,a
+      0000BF AF*04            [24]  278 	mov	r7,(_GPIO_Init_GPIOx_1_309 + 2)
+      0000C1 89 82            [24]  279 	mov	dpl,r1
+      0000C3 8E 83            [24]  280 	mov	dph,r6
+      0000C5 8F F0            [24]  281 	mov	b,r7
+      0000C7 12r00r00         [24]  282 	lcall	__gptrget
+      0000CA FD               [12]  283 	mov	r5,a
+      0000CB E5*00            [12]  284 	mov	a,_GPIO_Init_PARM_2
+      0000CD 42 05            [12]  285 	orl	ar5,a
+      0000CF 89 82            [24]  286 	mov	dpl,r1
+      0000D1 8E 83            [24]  287 	mov	dph,r6
+      0000D3 8F F0            [24]  288 	mov	b,r7
+      0000D5 ED               [12]  289 	mov	a,r5
+      0000D6 12r00r00         [24]  290 	lcall	__gptrput
+      0000D9 80 22            [24]  291 	sjmp	00106$
+      0000DB                        292 00105$:
+                                    293 ;	../../src/stm8s_gpio.c:103: GPIOx->DDR &= (uint8_t)(~(GPIO_Pin));
+      0000DB 74 02            [12]  294 	mov	a,#0x02
+      0000DD 25*02            [12]  295 	add	a,_GPIO_Init_GPIOx_1_309
+      0000DF FD               [12]  296 	mov	r5,a
+      0000E0 E4               [12]  297 	clr	a
+      0000E1 35*03            [12]  298 	addc	a,(_GPIO_Init_GPIOx_1_309 + 1)
+      0000E3 FE               [12]  299 	mov	r6,a
+      0000E4 AF*04            [24]  300 	mov	r7,(_GPIO_Init_GPIOx_1_309 + 2)
+      0000E6 8D 82            [24]  301 	mov	dpl,r5
+      0000E8 8E 83            [24]  302 	mov	dph,r6
+      0000EA 8F F0            [24]  303 	mov	b,r7
+      0000EC 12r00r00         [24]  304 	lcall	__gptrget
+      0000EF F9               [12]  305 	mov	r1,a
+      0000F0 E8               [12]  306 	mov	a,r0
+      0000F1 52 01            [12]  307 	anl	ar1,a
+      0000F3 8D 82            [24]  308 	mov	dpl,r5
+      0000F5 8E 83            [24]  309 	mov	dph,r6
+      0000F7 8F F0            [24]  310 	mov	b,r7
+      0000F9 E9               [12]  311 	mov	a,r1
+      0000FA 12r00r00         [24]  312 	lcall	__gptrput
+      0000FD                        313 00106$:
+                                    314 ;	../../src/stm8s_gpio.c:110: if ((((uint8_t)(GPIO_Mode)) & (uint8_t)0x40) != (uint8_t)0x00) /* Pull-Up or Push-Pull */
+      0000FD E5*01            [12]  315 	mov	a,_GPIO_Init_PARM_3
+      0000FF 30 E6 25         [24]  316 	jnb	acc.6,00108$
+                                    317 ;	../../src/stm8s_gpio.c:112: GPIOx->CR1 |= (uint8_t)GPIO_Pin;
+      000102 74 03            [12]  318 	mov	a,#0x03
+      000104 25*02            [12]  319 	add	a,_GPIO_Init_GPIOx_1_309
+      000106 FD               [12]  320 	mov	r5,a
+      000107 E4               [12]  321 	clr	a
+      000108 35*03            [12]  322 	addc	a,(_GPIO_Init_GPIOx_1_309 + 1)
+      00010A FE               [12]  323 	mov	r6,a
+      00010B AF*04            [24]  324 	mov	r7,(_GPIO_Init_GPIOx_1_309 + 2)
+      00010D 8D 82            [24]  325 	mov	dpl,r5
+      00010F 8E 83            [24]  326 	mov	dph,r6
+      000111 8F F0            [24]  327 	mov	b,r7
+      000113 12r00r00         [24]  328 	lcall	__gptrget
+      000116 F9               [12]  329 	mov	r1,a
+      000117 E5*00            [12]  330 	mov	a,_GPIO_Init_PARM_2
+      000119 42 01            [12]  331 	orl	ar1,a
+      00011B 8D 82            [24]  332 	mov	dpl,r5
+      00011D 8E 83            [24]  333 	mov	dph,r6
+      00011F 8F F0            [24]  334 	mov	b,r7
+      000121 E9               [12]  335 	mov	a,r1
+      000122 12r00r00         [24]  336 	lcall	__gptrput
+      000125 80 22            [24]  337 	sjmp	00109$
+      000127                        338 00108$:
+                                    339 ;	../../src/stm8s_gpio.c:116: GPIOx->CR1 &= (uint8_t)(~(GPIO_Pin));
+      000127 74 03            [12]  340 	mov	a,#0x03
+      000129 25*02            [12]  341 	add	a,_GPIO_Init_GPIOx_1_309
+      00012B FD               [12]  342 	mov	r5,a
+      00012C E4               [12]  343 	clr	a
+      00012D 35*03            [12]  344 	addc	a,(_GPIO_Init_GPIOx_1_309 + 1)
+      00012F FE               [12]  345 	mov	r6,a
+      000130 AF*04            [24]  346 	mov	r7,(_GPIO_Init_GPIOx_1_309 + 2)
+      000132 8D 82            [24]  347 	mov	dpl,r5
+      000134 8E 83            [24]  348 	mov	dph,r6
+      000136 8F F0            [24]  349 	mov	b,r7
+      000138 12r00r00         [24]  350 	lcall	__gptrget
+      00013B F9               [12]  351 	mov	r1,a
+      00013C E8               [12]  352 	mov	a,r0
+      00013D 52 01            [12]  353 	anl	ar1,a
+      00013F 8D 82            [24]  354 	mov	dpl,r5
+      000141 8E 83            [24]  355 	mov	dph,r6
+      000143 8F F0            [24]  356 	mov	b,r7
+      000145 E9               [12]  357 	mov	a,r1
+      000146 12r00r00         [24]  358 	lcall	__gptrput
+      000149                        359 00109$:
+                                    360 ;	../../src/stm8s_gpio.c:123: if ((((uint8_t)(GPIO_Mode)) & (uint8_t)0x20) != (uint8_t)0x00) /* Interrupt or Slow slope */
+      000149 E5*01            [12]  361 	mov	a,_GPIO_Init_PARM_3
+      00014B 30 E5 18         [24]  362 	jnb	acc.5,00111$
+                                    363 ;	../../src/stm8s_gpio.c:125: GPIOx->CR2 |= (uint8_t)GPIO_Pin;
+      00014E 8A 82            [24]  364 	mov	dpl,r2
+      000150 8B 83            [24]  365 	mov	dph,r3
+      000152 8C F0            [24]  366 	mov	b,r4
+      000154 12r00r00         [24]  367 	lcall	__gptrget
+      000157 FF               [12]  368 	mov	r7,a
+      000158 E5*00            [12]  369 	mov	a,_GPIO_Init_PARM_2
+      00015A 42 07            [12]  370 	orl	ar7,a
+      00015C 8A 82            [24]  371 	mov	dpl,r2
+      00015E 8B 83            [24]  372 	mov	dph,r3
+      000160 8C F0            [24]  373 	mov	b,r4
+      000162 EF               [12]  374 	mov	a,r7
+      000163 02r00r00         [24]  375 	ljmp	__gptrput
+      000166                        376 00111$:
+                                    377 ;	../../src/stm8s_gpio.c:129: GPIOx->CR2 &= (uint8_t)(~(GPIO_Pin));
+      000166 8A 82            [24]  378 	mov	dpl,r2
+      000168 8B 83            [24]  379 	mov	dph,r3
+      00016A 8C F0            [24]  380 	mov	b,r4
+      00016C 12r00r00         [24]  381 	lcall	__gptrget
+      00016F 52 00            [12]  382 	anl	ar0,a
+      000171 8A 82            [24]  383 	mov	dpl,r2
+      000173 8B 83            [24]  384 	mov	dph,r3
+      000175 8C F0            [24]  385 	mov	b,r4
+      000177 E8               [12]  386 	mov	a,r0
+      000178 02r00r00         [24]  387 	ljmp	__gptrput
+                                    388 ;------------------------------------------------------------
+                                    389 ;Allocation info for local variables in function 'GPIO_Write'
+                                    390 ;------------------------------------------------------------
+                                    391 ;PortVal                   Allocated with name '_GPIO_Write_PARM_2'
+                                    392 ;GPIOx                     Allocated to registers r5 r6 r7 
+                                    393 ;------------------------------------------------------------
+                                    394 ;	../../src/stm8s_gpio.c:141: void GPIO_Write(GPIO_TypeDef* GPIOx, uint8_t PortVal)
+                                    395 ;	-----------------------------------------
+                                    396 ;	 function GPIO_Write
+                                    397 ;	-----------------------------------------
+      00017B                        398 _GPIO_Write:
+                                    399 ;	../../src/stm8s_gpio.c:143: GPIOx->ODR = PortVal;
+      00017B E5*00            [12]  400 	mov	a,_GPIO_Write_PARM_2
+      00017D 02r00r00         [24]  401 	ljmp	__gptrput
+                                    402 ;------------------------------------------------------------
+                                    403 ;Allocation info for local variables in function 'GPIO_WriteHigh'
+                                    404 ;------------------------------------------------------------
+                                    405 ;PortPins                  Allocated with name '_GPIO_WriteHigh_PARM_2'
+                                    406 ;GPIOx                     Allocated to registers r5 r6 r7 
+                                    407 ;------------------------------------------------------------
+                                    408 ;	../../src/stm8s_gpio.c:154: void GPIO_WriteHigh(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef PortPins)
+                                    409 ;	-----------------------------------------
+                                    410 ;	 function GPIO_WriteHigh
+                                    411 ;	-----------------------------------------
+      000180                        412 _GPIO_WriteHigh:
+                                    413 ;	../../src/stm8s_gpio.c:156: GPIOx->ODR |= (uint8_t)PortPins;
+      000180 AD 82            [24]  414 	mov	r5,dpl
+      000182 AE 83            [24]  415 	mov	r6,dph
+      000184 AF F0            [24]  416 	mov	r7,b
+      000186 12r00r00         [24]  417 	lcall	__gptrget
+      000189 FC               [12]  418 	mov	r4,a
+      00018A E5*00            [12]  419 	mov	a,_GPIO_WriteHigh_PARM_2
+      00018C 42 04            [12]  420 	orl	ar4,a
+      00018E 8D 82            [24]  421 	mov	dpl,r5
+      000190 8E 83            [24]  422 	mov	dph,r6
+      000192 8F F0            [24]  423 	mov	b,r7
+      000194 EC               [12]  424 	mov	a,r4
+      000195 02r00r00         [24]  425 	ljmp	__gptrput
+                                    426 ;------------------------------------------------------------
+                                    427 ;Allocation info for local variables in function 'GPIO_WriteLow'
+                                    428 ;------------------------------------------------------------
+                                    429 ;PortPins                  Allocated with name '_GPIO_WriteLow_PARM_2'
+                                    430 ;GPIOx                     Allocated to registers r5 r6 r7 
+                                    431 ;------------------------------------------------------------
+                                    432 ;	../../src/stm8s_gpio.c:167: void GPIO_WriteLow(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef PortPins)
+                                    433 ;	-----------------------------------------
+                                    434 ;	 function GPIO_WriteLow
+                                    435 ;	-----------------------------------------
+      000198                        436 _GPIO_WriteLow:
+                                    437 ;	../../src/stm8s_gpio.c:169: GPIOx->ODR &= (uint8_t)(~PortPins);
+      000198 AD 82            [24]  438 	mov	r5,dpl
+      00019A AE 83            [24]  439 	mov	r6,dph
+      00019C AF F0            [24]  440 	mov	r7,b
+      00019E 12r00r00         [24]  441 	lcall	__gptrget
+      0001A1 FC               [12]  442 	mov	r4,a
+      0001A2 E5*00            [12]  443 	mov	a,_GPIO_WriteLow_PARM_2
+      0001A4 F4               [12]  444 	cpl	a
+      0001A5 52 04            [12]  445 	anl	ar4,a
+      0001A7 8D 82            [24]  446 	mov	dpl,r5
+      0001A9 8E 83            [24]  447 	mov	dph,r6
+      0001AB 8F F0            [24]  448 	mov	b,r7
+      0001AD EC               [12]  449 	mov	a,r4
+      0001AE 02r00r00         [24]  450 	ljmp	__gptrput
+                                    451 ;------------------------------------------------------------
+                                    452 ;Allocation info for local variables in function 'GPIO_WriteReverse'
+                                    453 ;------------------------------------------------------------
+                                    454 ;PortPins                  Allocated with name '_GPIO_WriteReverse_PARM_2'
+                                    455 ;GPIOx                     Allocated to registers r5 r6 r7 
+                                    456 ;------------------------------------------------------------
+                                    457 ;	../../src/stm8s_gpio.c:180: void GPIO_WriteReverse(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef PortPins)
+                                    458 ;	-----------------------------------------
+                                    459 ;	 function GPIO_WriteReverse
+                                    460 ;	-----------------------------------------
+      0001B1                        461 _GPIO_WriteReverse:
+                                    462 ;	../../src/stm8s_gpio.c:182: GPIOx->ODR ^= (uint8_t)PortPins;
+      0001B1 AD 82            [24]  463 	mov	r5,dpl
+      0001B3 AE 83            [24]  464 	mov	r6,dph
+      0001B5 AF F0            [24]  465 	mov	r7,b
+      0001B7 12r00r00         [24]  466 	lcall	__gptrget
+      0001BA FC               [12]  467 	mov	r4,a
+      0001BB E5*00            [12]  468 	mov	a,_GPIO_WriteReverse_PARM_2
+      0001BD 62 04            [12]  469 	xrl	ar4,a
+      0001BF 8D 82            [24]  470 	mov	dpl,r5
+      0001C1 8E 83            [24]  471 	mov	dph,r6
+      0001C3 8F F0            [24]  472 	mov	b,r7
+      0001C5 EC               [12]  473 	mov	a,r4
+      0001C6 02r00r00         [24]  474 	ljmp	__gptrput
+                                    475 ;------------------------------------------------------------
+                                    476 ;Allocation info for local variables in function 'GPIO_ReadOutputData'
+                                    477 ;------------------------------------------------------------
+                                    478 ;GPIOx                     Allocated to registers r5 r6 r7 
+                                    479 ;------------------------------------------------------------
+                                    480 ;	../../src/stm8s_gpio.c:191: uint8_t GPIO_ReadOutputData(GPIO_TypeDef* GPIOx)
+                                    481 ;	-----------------------------------------
+                                    482 ;	 function GPIO_ReadOutputData
+                                    483 ;	-----------------------------------------
+      0001C9                        484 _GPIO_ReadOutputData:
+                                    485 ;	../../src/stm8s_gpio.c:193: return ((uint8_t)GPIOx->ODR);
+      0001C9 12r00r00         [24]  486 	lcall	__gptrget
+      0001CC F5 82            [12]  487 	mov	dpl,a
+      0001CE 22               [24]  488 	ret
+                                    489 ;------------------------------------------------------------
+                                    490 ;Allocation info for local variables in function 'GPIO_ReadInputData'
+                                    491 ;------------------------------------------------------------
+                                    492 ;GPIOx                     Allocated to registers r5 r6 r7 
+                                    493 ;------------------------------------------------------------
+                                    494 ;	../../src/stm8s_gpio.c:202: uint8_t GPIO_ReadInputData(GPIO_TypeDef* GPIOx)
+                                    495 ;	-----------------------------------------
+                                    496 ;	 function GPIO_ReadInputData
+                                    497 ;	-----------------------------------------
+      0001CF                        498 _GPIO_ReadInputData:
+      0001CF AD 82            [24]  499 	mov	r5,dpl
+      0001D1 AE 83            [24]  500 	mov	r6,dph
+      0001D3 AF F0            [24]  501 	mov	r7,b
+                                    502 ;	../../src/stm8s_gpio.c:204: return ((uint8_t)GPIOx->IDR);
+      0001D5 0D               [12]  503 	inc	r5
+      0001D6 BD 00 01         [24]  504 	cjne	r5,#0x00,00103$
+      0001D9 0E               [12]  505 	inc	r6
+      0001DA                        506 00103$:
+      0001DA 8D 82            [24]  507 	mov	dpl,r5
+      0001DC 8E 83            [24]  508 	mov	dph,r6
+      0001DE 8F F0            [24]  509 	mov	b,r7
+      0001E0 12r00r00         [24]  510 	lcall	__gptrget
+      0001E3 F5 82            [12]  511 	mov	dpl,a
+      0001E5 22               [24]  512 	ret
+                                    513 ;------------------------------------------------------------
+                                    514 ;Allocation info for local variables in function 'GPIO_ReadInputPin'
+                                    515 ;------------------------------------------------------------
+                                    516 ;GPIO_Pin                  Allocated with name '_GPIO_ReadInputPin_PARM_2'
+                                    517 ;GPIOx                     Allocated to registers r5 r6 r7 
+                                    518 ;------------------------------------------------------------
+                                    519 ;	../../src/stm8s_gpio.c:213: BitStatus GPIO_ReadInputPin(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef GPIO_Pin)
+                                    520 ;	-----------------------------------------
+                                    521 ;	 function GPIO_ReadInputPin
+                                    522 ;	-----------------------------------------
+      0001E6                        523 _GPIO_ReadInputPin:
+      0001E6 AD 82            [24]  524 	mov	r5,dpl
+      0001E8 AE 83            [24]  525 	mov	r6,dph
+      0001EA AF F0            [24]  526 	mov	r7,b
+                                    527 ;	../../src/stm8s_gpio.c:215: return ((BitStatus)(GPIOx->IDR & (uint8_t)GPIO_Pin));
+      0001EC 0D               [12]  528 	inc	r5
+      0001ED BD 00 01         [24]  529 	cjne	r5,#0x00,00103$
+      0001F0 0E               [12]  530 	inc	r6
+      0001F1                        531 00103$:
+      0001F1 8D 82            [24]  532 	mov	dpl,r5
+      0001F3 8E 83            [24]  533 	mov	dph,r6
+      0001F5 8F F0            [24]  534 	mov	b,r7
+      0001F7 12r00r00         [24]  535 	lcall	__gptrget
+      0001FA FD               [12]  536 	mov	r5,a
+      0001FB E5*00            [12]  537 	mov	a,_GPIO_ReadInputPin_PARM_2
+      0001FD 5D               [12]  538 	anl	a,r5
+      0001FE F5 82            [12]  539 	mov	dpl,a
+      000200 22               [24]  540 	ret
+                                    541 ;------------------------------------------------------------
+                                    542 ;Allocation info for local variables in function 'GPIO_ExternalPullUpConfig'
+                                    543 ;------------------------------------------------------------
+                                    544 ;GPIO_Pin                  Allocated with name '_GPIO_ExternalPullUpConfig_PARM_2'
+                                    545 ;NewState                  Allocated with name '_GPIO_ExternalPullUpConfig_PARM_3'
+                                    546 ;GPIOx                     Allocated to registers r5 r6 r7 
+                                    547 ;------------------------------------------------------------
+                                    548 ;	../../src/stm8s_gpio.c:225: void GPIO_ExternalPullUpConfig(GPIO_TypeDef* GPIOx, GPIO_Pin_TypeDef GPIO_Pin, FunctionalState NewState)
+                                    549 ;	-----------------------------------------
+                                    550 ;	 function GPIO_ExternalPullUpConfig
+                                    551 ;	-----------------------------------------
+      000201                        552 _GPIO_ExternalPullUpConfig:
+      000201 AD 82            [24]  553 	mov	r5,dpl
+      000203 AE 83            [24]  554 	mov	r6,dph
+      000205 AF F0            [24]  555 	mov	r7,b
+                                    556 ;	../../src/stm8s_gpio.c:231: if (NewState != DISABLE) /* External Pull-Up Set*/
+      000207 E5*01            [12]  557 	mov	a,_GPIO_ExternalPullUpConfig_PARM_3
+      000209 60 21            [24]  558 	jz	00102$
+                                    559 ;	../../src/stm8s_gpio.c:233: GPIOx->CR1 |= (uint8_t)GPIO_Pin;
+      00020B 74 03            [12]  560 	mov	a,#0x03
+      00020D 2D               [12]  561 	add	a,r5
+      00020E FA               [12]  562 	mov	r2,a
+      00020F E4               [12]  563 	clr	a
+      000210 3E               [12]  564 	addc	a,r6
+      000211 FB               [12]  565 	mov	r3,a
+      000212 8F 04            [24]  566 	mov	ar4,r7
+      000214 8A 82            [24]  567 	mov	dpl,r2
+      000216 8B 83            [24]  568 	mov	dph,r3
+      000218 8C F0            [24]  569 	mov	b,r4
+      00021A 12r00r00         [24]  570 	lcall	__gptrget
+      00021D F9               [12]  571 	mov	r1,a
+      00021E E5*00            [12]  572 	mov	a,_GPIO_ExternalPullUpConfig_PARM_2
+      000220 42 01            [12]  573 	orl	ar1,a
+      000222 8A 82            [24]  574 	mov	dpl,r2
+      000224 8B 83            [24]  575 	mov	dph,r3
+      000226 8C F0            [24]  576 	mov	b,r4
+      000228 E9               [12]  577 	mov	a,r1
+      000229 02r00r00         [24]  578 	ljmp	__gptrput
+      00022C                        579 00102$:
+                                    580 ;	../../src/stm8s_gpio.c:236: GPIOx->CR1 &= (uint8_t)(~(GPIO_Pin));
+      00022C 74 03            [12]  581 	mov	a,#0x03
+      00022E 2D               [12]  582 	add	a,r5
+      00022F FD               [12]  583 	mov	r5,a
+      000230 E4               [12]  584 	clr	a
+      000231 3E               [12]  585 	addc	a,r6
+      000232 FE               [12]  586 	mov	r6,a
+      000233 8D 82            [24]  587 	mov	dpl,r5
+      000235 8E 83            [24]  588 	mov	dph,r6
+      000237 8F F0            [24]  589 	mov	b,r7
+      000239 12r00r00         [24]  590 	lcall	__gptrget
+      00023C FC               [12]  591 	mov	r4,a
+      00023D E5*00            [12]  592 	mov	a,_GPIO_ExternalPullUpConfig_PARM_2
+      00023F F4               [12]  593 	cpl	a
+      000240 52 04            [12]  594 	anl	ar4,a
+      000242 8D 82            [24]  595 	mov	dpl,r5
+      000244 8E 83            [24]  596 	mov	dph,r6
+      000246 8F F0            [24]  597 	mov	b,r7
+      000248 EC               [12]  598 	mov	a,r4
+      000249 02r00r00         [24]  599 	ljmp	__gptrput
+                                    600 	.area CSEG    (CODE)
+                                    601 	.area CONST   (CODE)
+                                    602 	.area XINIT   (CODE)
+                                    603 	.area CABS    (ABS,CODE)
