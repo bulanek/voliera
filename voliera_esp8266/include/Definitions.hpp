@@ -24,9 +24,12 @@
 /// Update time from NTP server every 10 hours
 #define TIME_UPDATE_INTERVAL_SEC 36000U
 
+#define LIGHT_STOP_AFTER_SUNRISE 3600U
 
 #define LIGHT_START_BEFORE_SUNSET_SEC 3600U
 
+// Light start, time in seconds after midnight; (6:40)
+#define LIGHT_START_SEC 24000U
 // Light stop, time in seconds after midnight; (23:00)
 #define LIGHT_STOP_SEC 82800U
 
