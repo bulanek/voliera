@@ -20,7 +20,6 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 static void InitializeClock(void);
-
 static void InitializeSPI(void);
 static void InitializeTimer(void);
 static void InitialiseUART(void);
@@ -40,18 +39,22 @@ uint8_t f_Intensity = 0U;
 
 void main()
 {
+    int i;
+
     disableInterrupts();
 
     // HSI, TIM2, SPI, UART1 enable
     InitializeClock();
 
+    // SPI SCK
     GPIO_Init(GPIOC, 5, GPIO_MODE_IN_FL_NO_IT);
+    // SPI MOSI
     GPIO_Init(GPIOC, 6, GPIO_MODE_IN_FL_NO_IT);
+    // SPI NSS AF1
     GPIO_Init(GPIOA, 3, GPIO_MODE_IN_FL_NO_IT);
-
+    // Timer2 (channel 3) AF1
     GPIO_Init(GPIOD, GPIO_PIN_2, GPIO_MODE_OUT_PP_HIGH_FAST);
-
-    // TIMER
+    // TIMER (channel 2)
     GPIO_Init(GPIOD, GPIO_PIN_3, GPIO_MODE_OUT_PP_HIGH_FAST);
 
     InitialiseUART();
@@ -62,12 +65,12 @@ void main()
 
     while (1)
     {
+        printf("start\n")
         wfi();
         disableInterrupts();
         if (f_Counter == SPI_BUFFER_ARRAY_LENGTH)
         {
             f_Counter = 0;
-            int i;
             for (i = 0; i < SPI_BUFFER_ARRAY_LENGTH; ++i)
             {
                 printf("Data obtained: %u\n", f_SPIBuffer[i]);
