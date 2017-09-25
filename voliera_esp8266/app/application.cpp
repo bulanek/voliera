@@ -75,7 +75,7 @@ static void onTimeReceivedCb(NtpClient& client, time_t ntpTime)
 #ifdef DEBUG
     Serial.println("In onTimeReceivedCb");
     DateTime date(ntpTime + TIME_OFFSET_SEC);
-    debugf("Hour, minutes: %i, %i\n", date.Hour, date.Minute);
+    debugf("Hour, minutes: %i, %i\n\r", date.Hour, date.Minute);
 #endif
 
     SystemClock.setTime(ntpTime, eTZ_UTC);
@@ -85,7 +85,7 @@ static void onTimeReceivedCb(NtpClient& client, time_t ntpTime)
     if (f_UpdateTimeNTP == 0U)
     {
 #ifdef DEBUG
-        debugf("First time, calling timerSPICallback\n");
+        debugf("First time, calling timerSPICallback\n\r");
 #endif
         f_UpdateTimeNTP = ntpTime;
     }
@@ -96,7 +96,8 @@ static void onTimeReceivedCb(NtpClient& client, time_t ntpTime)
     timerSPICallback();
 }
 
-NtpClient f_ntpClient(NTP_SERVER, TIMER_SPI_TIMEOUT_MS, onTimeReceivedCb);
+NtpClient f_ntpClient(onTimeReceivedCb);
+
 
 ////////////////////////////////////////////////////////////////////////////////
 void timerSPICallback(void)
@@ -117,7 +118,7 @@ void timerSPICallback(void)
 
     f_spi.beginTransaction(f_spiSetting);
 #ifdef DEBUG
-    debugf("Data: %u\n", intensity);
+    debugf("Data: %u\n\r", intensity);
 #endif
     // TODO 4 -> constant common with stm8 as well
     f_spi.transfer((uint8_t*) &intensity, 4);
@@ -242,14 +243,14 @@ static uint32_t computeTriangleRatioU32(const uint32_t timeSec, const uint32_t s
 
 ////////////////////////////////////////////////////////////////////////////////
 // Will be called when WiFi station was connected to AP
-void connectOk(void)
+void gotIP(IPAddress, IPAddress, IPAddress)
 {
 	Serial.println("I'm CONNECTED");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Will be called when WiFi station timeout was reached
-void connectFail()
+void connectFail(String, uint8_t, uint8_t[6], uint8_t)
 {
 	Serial.println("I'm NOT CONNECTED. Need help :(");
 }
@@ -270,16 +271,20 @@ void init(void)
 
     SystemClock.setTimeZone(TIME_OFFSET_SEC / 3600U);
 
+    f_ntpClient.setNtpServer(NTP_SERVER);
+
     pinMode(PIN_SPI_MOSI, OUTPUT);
     pinMode(PIN_SPI_CLK, OUTPUT);
     pinMode(PIN_SPI_SS, OUTPUT);
 
-    f_spi.begin();
 
-    WifiStation.waitConnection(connectOk, CONNECTION_TIMEOUT_SEC, connectFail);
+    WifiEvents.onStationGotIP(gotIP);
+    WifiEvents.onStationDisconnect(connectFail);
 
     f_TimerSPI.initializeMs(TIMER_SPI_TIMEOUT_MS, timerSPICallback);
     f_TimerSPI.start(true);
+
+    f_spi.begin();
 
     // Run our method when station was connected to AP (or not connected)
 }

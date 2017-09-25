@@ -5,7 +5,6 @@
 #define WIFI_SSID "Tenda_5EE5C0" // Put you SSID and Password here
 #define WIFI_PWD "pandapanda"
 
-#define TEMPERATURE_URL "http://pocasi.seznam.cz/praha"
 #define NTP_SERVER "0.cz.pool.ntp.org"
 #define NTP_TIMEOUT_SEC 3600
 
@@ -34,6 +33,8 @@
 #define LIGHT_STOP_SEC 82800U
 
 #define TIMER_SPI_TIMEOUT_MS 60000U
+
+#define TIMER_NTP_TIMEOUT_SEC 3600
 
 #define LIGHT_INTENSITY_DIVIDE 2
 
