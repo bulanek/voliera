@@ -1,6 +1,5 @@
 #define _EXTI 1
 #define _GPIO 1
-//#define STM8S003
 
 // sdcc includes
 #include <stdint.h>
@@ -20,9 +19,10 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 static void InitializeClock(void);
+static void InitializeGPIO(void);
 static void InitializeSPI(void);
 static void InitializeTimer(void);
-static void InitialiseUART(void);
+static void InitializeUART(void);
 /* Private functions ---------------------------------------------------------*/
 /* Public functions ----------------------------------------------------------*/
 
@@ -39,43 +39,27 @@ uint8_t f_Intensity = 0U;
 
 void main()
 {
-    int i;
-
     disableInterrupts();
 
     // HSI, TIM2, SPI, UART1 enable
     InitializeClock();
-
-    // SPI SCK
-    GPIO_Init(GPIOC, 5, GPIO_MODE_IN_FL_NO_IT);
-    // SPI MOSI
-    GPIO_Init(GPIOC, 6, GPIO_MODE_IN_FL_NO_IT);
-    // SPI NSS AF1
-    GPIO_Init(GPIOA, 3, GPIO_MODE_IN_FL_NO_IT);
-    // Timer2 (channel 3) AF1
-    GPIO_Init(GPIOD, GPIO_PIN_2, GPIO_MODE_OUT_PP_HIGH_FAST);
-    // TIMER (channel 2)
-    GPIO_Init(GPIOD, GPIO_PIN_3, GPIO_MODE_OUT_PP_HIGH_FAST);
-
-    InitialiseUART();
+    InitializeGPIO();
+    InitializeUART();
     InitializeSPI();
-
     InitializeTimer();
     enableInterrupts();
 
+    printf("before while\n");
     while (1)
     {
-        printf("start\n")
         wfi();
+        printf("after wfi\n");
         disableInterrupts();
         if (f_Counter == SPI_BUFFER_ARRAY_LENGTH)
         {
             f_Counter = 0;
-            for (i = 0; i < SPI_BUFFER_ARRAY_LENGTH; ++i)
-            {
-                printf("Data obtained: %u\n", f_SPIBuffer[i]);
-            }
             f_Intensity = f_SPIBuffer[0];
+            printf("fIntensity: %i\n", f_Intensity);
 
             if (f_Intensity != 0U)
             {
@@ -107,11 +91,24 @@ void InitializeClock(void)
 #endif
 }
 
+void InitializeGPIO(void)
+{
+    // SPI SCK
+    GPIO_Init(GPIOC, 5, GPIO_MODE_IN_FL_NO_IT);
+    // SPI MOSI
+    GPIO_Init(GPIOC, 6, GPIO_MODE_IN_FL_NO_IT);
+    // SPI NSS AF1
+    GPIO_Init(GPIOA, 3, GPIO_MODE_IN_FL_NO_IT);
+    // Timer2 (channel 3) AF1
+    GPIO_Init(GPIOD, GPIO_PIN_2, GPIO_MODE_OUT_PP_HIGH_FAST);
+    // Timer2 (channel 2) AF1
+    GPIO_Init(GPIOD, GPIO_PIN_3, GPIO_MODE_OUT_PP_HIGH_FAST);
+}
+
 void InitializeSPI(void)
 {
     // Disable while configuration
     SPI->CR1 &= ~SPI_CR1_SPE;
-
     //Clock polarity
     SPI->CR1 |= SPI_CR1_CPOL;
     // Clock phase
@@ -130,7 +127,6 @@ void InitializeSPI(void)
 
     // Enable Rx interrupt
     SPI->ICR |= SPI_ICR_RXEI;
-
 //    SPI->ICR |= SPI_ICR_WKIE;
     // Enable SPI
     SPI->CR1 |= SPI_CR1_SPE;
@@ -166,7 +162,7 @@ void InitializeTimer(void)
 //
 //  Important: This relies upon the system clock being set to run at 16 MHz.
 //
-void InitialiseUART(void)
+void InitializeUART(void)
 {
     //
     //  Clear the Idle Line Detected bit in the status register by a read
@@ -217,8 +213,7 @@ void putchar(char aChar)
     }
 }
 
-void SPI_IRQHandler(void)
-__interrupt(10)
+void SPI_IRQHandler(void) __interrupt(10)
 {
     // f_Counter < SPI_BUFFER_ARRAY_LENGTH always
     if (f_Counter >= SPI_BUFFER_ARRAY_LENGTH)

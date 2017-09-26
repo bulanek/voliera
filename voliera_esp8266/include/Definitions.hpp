@@ -10,15 +10,17 @@
 
 #define PIN_MISO
 #define PIN_GREEN 12
-#define PIN_BLUE 4
 
 
 #define PIN_SPI_MOSI 13
 #define PIN_SPI_CLK 14
 #define PIN_SPI_SS 15
 
+#define PIN_SUMMER_TIME 4
+
 ///
-#define TIME_OFFSET_SEC 7200
+#define TIME_OFFSET_SEC 3600
+#define TIME_OFFSET_HOUR 1
 
 /// Update time from NTP server every 10 hours
 #define TIME_UPDATE_INTERVAL_SEC 36000U

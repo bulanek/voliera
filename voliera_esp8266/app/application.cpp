@@ -14,67 +14,82 @@ SPIClass f_spi;
 Timer f_TimerSPI;
 volatile time_t f_UpdateTimeNTP = 0;
 
+// Local time in hour (inc. summer time)
+uint8_t f_LocalTimeOffsetInHour = 1;
+
 // TODO ROM access
+// Sunset in UTC time
 uint32_t SUNSET_MONTHS_IN_MIN[12] = {
-        16 * 60 + 49,
-        17 * 60 + 31,
-        18 * 60 + 16,
-        20 * 60 + 7,
-        20 * 60 * 58,
-        21 * 60 + 46,
-        21 * 60 + 59,
-        21 * 60 + 23,
-        20 * 60 + 19,
-        19 * 60 + 12,
+        15 * 60 + 49,
+        16 * 60 + 31,
+        17 * 60 + 16,
+        18 * 60 + 7,
+        18 * 60 * 58,
+        19 * 60 + 46,
+        19 * 60 + 59,
+        19 * 60 + 23,
+        18 * 60 + 19,
         17 * 60 + 12,
-        16 * 60 + 40
+        16 * 60 + 12,
+        15 * 60 + 40
 };
-// TODO implement
+
+// Sunrise in UTC time
 uint32_t SUNRISE_MONTHS_IN_MIN[12] = {
-        8 * 60 + 01,
-        7 * 60 + 35,
-        6 * 60 + 45,
-        6 * 60 + 38,
-        5 * 60 * 38,
-        4 * 60 + 57,
-        4 * 60 + 56,
-        5 * 60 + 31,
-        6 * 60 + 17,
-        7 * 60 + 02,
-        6 * 60 + 52,
-        7 * 60 + 39
+        7 * 60 + 01,
+        6 * 60 + 35,
+        5 * 60 + 45,
+        4 * 60 + 38,
+        3 * 60 * 38,
+        2 * 60 + 57,
+        2 * 60 + 56,
+        3 * 60 + 31,
+        4 * 60 + 17,
+        5 * 60 + 02,
+        5 * 60 + 52,
+        6 * 60 + 39
 };
 
 // PRIVATE FUNCTIONS
 
-// Get time of sunset or sunrise in seconds
+/// Get time of sunset or sunrise in seconds
 static uint32_t getSunsetRiseInSec(const uint32_t month,
         const uint32_t day, const uint32_t* const pSunsetRiseInMin);
-
-// Timer callback to stm8 every minute for SPI transfer
+/// Timer callback to stm8 every minute for SPI transfer
 static void timerSPICallback(void);
-
-// Update NTP time in case of fulfill conditions and establish connection to WiFi.
+/// Update NTP time in case of fulfill conditions and establish connection to WiFi.
 static void requestForNTPTime(DateTime& rDateTime);
-
-// Get intensity of light (0 - 0xFFFFFFFF)/LIGHT_INTENSITY_DIVIDE
+/// Get intensity of light (0 - 0xFFFFFFFF)/LIGHT_INTENSITY_DIVIDE
 static uint32_t getIntensity(const DateTime& rDateTime);
-
-// Get intensity from sunset computation
+/// Get intensity from sunset computation
 static uint32_t getIntensitySunset(const DateTime& rDateTime);
-// Get intensity from sunrise computation
+/// Get intensity from sunrise computation
 static uint32_t getIntensitySunrise(const DateTime& rDateTime);
 
-/*  compute intensity defined as _startTimeSec/(middle endTimeSec:startTimeSec)\endTimeSec_ */
+///  compute intensity defined as _startTimeSec/(middle endTimeSec:startTimeSec)\endTimeSec_
 static uint32_t computeTriangleRatioU32(const uint32_t timeSec,const  uint32_t startTimeSec,
        const  uint32_t endTimeSec);
+
+/// Compute if is summer time
+bool isSummerTime(const time_t pTime);
+bool isSummerTimeMarch(const uint8_t day, const uint8_t dayOfWeek);
+bool isSummerTimeOctober(const uint8_t day, const uint8_t dayOfWeek);
 
 ////////////////////////////////////////////////////////////////////////////////
 static void onTimeReceivedCb(NtpClient& client, time_t ntpTime)
 {
+    if (isSummerTime(ntpTime))
+    {
+        f_LocalTimeOffsetInHour = TIME_OFFSET_HOUR + 1;
+    }
+    else
+    {
+        f_LocalTimeOffsetInHour = TIME_OFFSET_HOUR;
+    }
+    SystemClock.setTimeZone(f_LocalTimeOffsetInHour);
+
 #ifdef DEBUG
-    Serial.println("In onTimeReceivedCb");
-    DateTime date(ntpTime + TIME_OFFSET_SEC);
+    DateTime date = SystemClock.now();
     debugf("Hour, minutes: %i, %i\n\r", date.Hour, date.Minute);
 #endif
 
@@ -110,6 +125,8 @@ void timerSPICallback(void)
     {
         return;
     }
+    debugf("hour, minute: %i, %i\n", dateTime.Hour, dateTime.Minute);
+    debugf("offset: %i\n", f_LocalTimeOffsetInHour);
 
     uint32_t intensity = getIntensity(dateTime);
 
@@ -269,7 +286,7 @@ void init(void)
     WifiStation.config(WIFI_SSID, WIFI_PWD);
     WifiStation.enable(true);
 
-    SystemClock.setTimeZone(TIME_OFFSET_SEC / 3600U);
+    SystemClock.setTimeZone(f_LocalTimeOffsetInHour);
 
     f_ntpClient.setNtpServer(NTP_SERVER);
 
@@ -305,6 +322,75 @@ static uint32_t getSunsetRiseInSec(const uint32_t month, const uint32_t day,
     sunsetRiseInSec += day * pSunsetRiseInMin[month % 12] * 60 / 30;
     sunsetRiseInSec -= day * pSunsetRiseInMin[month - 1] * 60 / 30;
 
+    // local time offset .. NOTE as parameter?
+    sunsetRiseInSec += f_LocalTimeOffsetInHour * 3600;
+
     return sunsetRiseInSec;
 }
 
+bool isSummerTime(const time_t pTime)
+{
+    DateTime date(pTime);
+    if (((uint8_t)date.Month < 3) || (date.Month > 10))
+    {
+        return false;
+    }
+    if ((date.Month > 3) && (date.Month < 10))
+    {
+        return true;
+    }
+
+    if (date.Month == 3)
+    {
+        return isSummerTimeMarch(date.Day, date.DayofWeek);
+    }
+    else
+    {
+        return isSummerTimeOctober(date.Day, date.DayofWeek);
+    }
+    return false;
+}
+
+bool isSummerTimeMarch(const uint8_t day, const uint8_t dayOfWeek)
+{
+    // week with april
+    if (((7 - dayOfWeek) + day) > 31)
+    {
+        return true;
+    }
+
+    // week without april
+    if (dayOfWeek < 7)
+    {
+        return false;
+    }
+
+    // sunday
+    if ((day + 7) > 31 )
+    {
+        return true;
+    }
+    return false;
+}
+
+bool isSummerTimeOctober(const uint8_t day, const uint8_t dayOfWeek)
+{
+    // week with november
+    if (((7 - dayOfWeek) + day) > 31)
+    {
+        return false;
+    }
+
+    // week without november
+    if (dayOfWeek < 7)
+    {
+        return true;
+    }
+
+    // sunday
+    if ((day + 7) > 31 )
+    {
+        return false;
+    }
+    return true;
+}
