@@ -125,8 +125,8 @@ void timerSPICallback(void)
     {
         return;
     }
-    debugf("hour, minute: %i, %i\n", dateTime.Hour, dateTime.Minute);
-    debugf("offset: %i\n", f_LocalTimeOffsetInHour);
+//    debugf("hour, minute: %i, %i\n", dateTime.Hour, dateTime.Minute);
+//    debugf("offset: %i\n", f_LocalTimeOffsetInHour);
 
     uint32_t intensity = getIntensity(dateTime);
 
@@ -183,6 +183,7 @@ uint32_t getIntensity(const DateTime& rDateTime)
     uint32_t intensity = 0U;
 
     intensity = getIntensitySunset(rDateTime);
+//    debugf("Intensity sunset: %i\n",intensity);
     if (intensity == 0U)
     {
         intensity = getIntensitySunrise(rDateTime);
@@ -199,6 +200,7 @@ uint32_t getIntensitySunset(const DateTime& rDateTime)
 
     uint32_t sunsetInSec = getSunsetRiseInSec(rDateTime.Month, rDateTime.Day,
             SUNSET_MONTHS_IN_MIN);
+//    debugf ("Sunset in %i:%i \n",sunsetInSec/3600, sunsetInSec/ 60 % 60);
 
     uint8_t sunSethour = sunsetInSec / 3600U;
     uint8_t sunSetMinutes = (sunsetInSec / 60U) % 60U;
@@ -207,6 +209,8 @@ uint32_t getIntensitySunset(const DateTime& rDateTime)
     uint32_t endTimeSec = LIGHT_STOP_SEC;
 
     uint32_t intensity = 0U;
+//    debugf ("startTime, endTime, time: %i, %i, %i\n", startTimeSec, endTimeSec, timeSec);
+
     if (endTimeSec > startTimeSec)
     {
     intensity = computeTriangleRatioU32(timeSec, startTimeSec,
@@ -221,6 +225,7 @@ uint32_t getIntensitySunrise(const DateTime& rDateTime)
             + rDateTime.Second;
 
     uint32_t sunRiseInSec = getSunsetRiseInSec(rDateTime.Month, rDateTime.Day, SUNRISE_MONTHS_IN_MIN);
+//    debugf ("Sunrise in %i:%i \n",sunRiseInSec/3600, sunRiseInSec / 60 % 60);
 
     uint8_t sunRiseHour = sunRiseInSec / 3600U;
     uint8_t sunRiseMinutes = (sunRiseInSec / 60U) % 60U;
@@ -228,12 +233,38 @@ uint32_t getIntensitySunrise(const DateTime& rDateTime)
     uint32_t startTimeSec = LIGHT_START_SEC;
     uint32_t endTimeSec = LIGHT_STOP_AFTER_SUNRISE + sunRiseInSec;
 
+//    debugf ("startTime, endTime, time: %i, %i, %i\n", startTimeSec, endTimeSec, timeSec);
+
     uint32_t intensity = 0U;
     if (endTimeSec > startTimeSec)
     {
         intensity = computeTriangleRatioU32(timeSec, startTimeSec, endTimeSec);
     }
     return intensity;
+}
+
+static uint32_t getSunsetRiseInSec(const uint32_t month, const uint32_t day,
+        const uint32_t* const pSunsetRiseInMin)
+{
+    if ((day > 31U) || (month > 12) || (month == 0U))
+    {
+        return 0;
+    }
+    if ((pSunsetRiseInMin != SUNSET_MONTHS_IN_MIN) && (pSunsetRiseInMin != SUNRISE_MONTHS_IN_MIN))
+    {
+        return 0;
+    }
+//    debugf("getSunsetRiseInSec: month: %u, day: %u\n", month, day);
+
+    uint32_t sunsetRiseInSec = pSunsetRiseInMin[month - 1] * 60;
+    // / 30 due to ~ 30 day on average (day/30)
+    sunsetRiseInSec += day * pSunsetRiseInMin[month % 12] * 60U / 30U;
+    sunsetRiseInSec -= day * pSunsetRiseInMin[month - 1] * 60U / 30U;
+
+    // local time offset .. NOTE as parameter?
+    sunsetRiseInSec += f_LocalTimeOffsetInHour * 3600;
+
+    return sunsetRiseInSec;
 }
 
 static uint32_t computeTriangleRatioU32(const uint32_t timeSec, const uint32_t startTimeSec,
@@ -294,7 +325,6 @@ void init(void)
     pinMode(PIN_SPI_CLK, OUTPUT);
     pinMode(PIN_SPI_SS, OUTPUT);
 
-
     WifiEvents.onStationGotIP(gotIP);
     WifiEvents.onStationDisconnect(connectFail);
 
@@ -302,31 +332,9 @@ void init(void)
     f_TimerSPI.start(true);
 
     f_spi.begin();
-
     // Run our method when station was connected to AP (or not connected)
 }
 
-static uint32_t getSunsetRiseInSec(const uint32_t month, const uint32_t day,
-        const uint32_t* const pSunsetRiseInMin)
-{
-    if ((day > 31U) || (month > 12) || (month == 0U))
-    {
-        return 0;
-    }
-    if ((pSunsetRiseInMin != SUNSET_MONTHS_IN_MIN) && (pSunsetRiseInMin != SUNRISE_MONTHS_IN_MIN))
-    {
-        return 0;
-    }
-
-    uint32_t sunsetRiseInSec = pSunsetRiseInMin[month - 1];
-    sunsetRiseInSec += day * pSunsetRiseInMin[month % 12] * 60 / 30;
-    sunsetRiseInSec -= day * pSunsetRiseInMin[month - 1] * 60 / 30;
-
-    // local time offset .. NOTE as parameter?
-    sunsetRiseInSec += f_LocalTimeOffsetInHour * 3600;
-
-    return sunsetRiseInSec;
-}
 
 bool isSummerTime(const time_t pTime)
 {

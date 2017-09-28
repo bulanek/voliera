@@ -49,17 +49,14 @@ void main()
     InitializeTimer();
     enableInterrupts();
 
-    printf("before while\n");
     while (1)
     {
         wfi();
-        printf("after wfi\n");
         disableInterrupts();
         if (f_Counter == SPI_BUFFER_ARRAY_LENGTH)
         {
             f_Counter = 0;
             f_Intensity = f_SPIBuffer[0];
-            printf("fIntensity: %i\n", f_Intensity);
 
             if (f_Intensity != 0U)
             {
