@@ -2,14 +2,20 @@
 #define DEFINITIONS_HPP
 
 #define PIN_RED 4
-
 #define PIN_GREEN 2
 #define PIN_BLUE 3
-
 #define RGB_PORT GPIOD
+
+#define CONFIG_PIN  GPIO_PIN_0
+
+#define RUN_SPI_LED_PORT GPIOC
+#define RUN_SPI_LED_PIN GPIO_PIN_2
+
+#define PWM_PIN GPIO_PIN_3
 
 /// Max value timer
 #define PWM_TIMER_ARR 10000U
 
+#define EEPROM_DATA_MEMORY_START 0x00407F
 
 #endif //  DEFINITIONS_HPP

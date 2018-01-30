@@ -25,4 +25,14 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<variableList>
+		<variable>
+			<name>ESP_HOME</name>
+			<value>file:/C:/Espressif</value>
+		</variable>
+		<variable>
+			<name>SMING_HOME</name>
+			<value>file:/D:/git/Sming-develop/Sming</value>
+		</variable>
+	</variableList>
 </projectDescription>

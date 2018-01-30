@@ -8,6 +8,10 @@
 #define NTP_SERVER "0.cz.pool.ntp.org"
 #define NTP_TIMEOUT_SEC 3600
 
+#define SUNSET_SERVER "http://api.sunrise-sunset.org/"
+#define PRAGUE_LTG 50.08804
+#define PRAGUE_LONG 14.42076
+
 #define PIN_MISO
 #define PIN_GREEN 12
 

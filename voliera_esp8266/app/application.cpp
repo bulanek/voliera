@@ -1,9 +1,11 @@
 
 #include <SmingCore/SmingCore.h>
-
 #include "Definitions.hpp"
+#include "sscanf_impl.h"
 
-#define DEBUG
+//#include <Services/ArduinoJson/ArduinoJson.h>
+#include <Services/ArduinoJson/ArduinoJson.h>
+
 #define RODATA_ATTR  __attribute__((section(".irom.text"))) __attribute__((aligned(4)))
 
 
@@ -11,11 +13,16 @@
 SPISettings f_spiSetting(20000U, MSBFIRST, SPI_MODE1);
 SPIClass f_spi;
 
+HttpClient g_HttpClient;
+
 Timer f_TimerSPI;
 volatile time_t f_UpdateTimeNTP = 0;
 
 // Local time in hour (inc. summer time)
 uint8_t f_LocalTimeOffsetInHour = 1;
+
+uint32_t g_SunsetInSec = 0;
+uint32_t g_SunriseInSec = 0;
 
 // TODO ROM access
 // Sunset in UTC time
@@ -55,10 +62,15 @@ uint32_t SUNRISE_MONTHS_IN_MIN[12] = {
 /// Get time of sunset or sunrise in seconds
 static uint32_t getSunsetRiseInSec(const uint32_t month,
         const uint32_t day, const uint32_t* const pSunsetRiseInMin);
+
 /// Timer callback to stm8 every minute for SPI transfer
 static void timerSPICallback(void);
 /// Update NTP time in case of fulfill conditions and establish connection to WiFi.
-static void requestForNTPTime(DateTime& rDateTime);
+static bool requestForNTPTime(DateTime& rDateTime);
+/// Request for update sunset (sunrise) time.
+static bool requestForSunsetTime(void);
+int httpRequestDelegate(HttpConnection& client, bool successful);
+
 /// Get intensity of light (0 - 0xFFFFFFFF)/LIGHT_INTENSITY_DIVIDE
 static uint32_t getIntensity(const DateTime& rDateTime);
 /// Get intensity from sunset computation
@@ -76,36 +88,23 @@ bool isSummerTimeMarch(const uint8_t day, const uint8_t dayOfWeek);
 bool isSummerTimeOctober(const uint8_t day, const uint8_t dayOfWeek);
 
 ////////////////////////////////////////////////////////////////////////////////
-static void onTimeReceivedCb(NtpClient& client, time_t ntpTime)
-{
-    if (isSummerTime(ntpTime))
-    {
+static void onTimeReceivedCb(NtpClient& client, time_t ntpTime) {
+    if (isSummerTime(ntpTime)) {
         f_LocalTimeOffsetInHour = TIME_OFFSET_HOUR + 1;
     }
-    else
-    {
+    else {
         f_LocalTimeOffsetInHour = TIME_OFFSET_HOUR;
     }
+
     SystemClock.setTimeZone(f_LocalTimeOffsetInHour);
-
-#ifdef DEBUG
-    DateTime date = SystemClock.now();
-    debugf("Hour, minutes: %i, %i\n\r", date.Hour, date.Minute);
-#endif
-
     SystemClock.setTime(ntpTime, eTZ_UTC);
-    WifiStation.disconnect();
+//    WifiStation.disconnect();
 
     // First time
-    if (f_UpdateTimeNTP == 0U)
-    {
-#ifdef DEBUG
-        debugf("First time, calling timerSPICallback\n\r");
-#endif
+    if (f_UpdateTimeNTP == 0U) {
         f_UpdateTimeNTP = ntpTime;
     }
-    else
-    {
+    else {
         f_UpdateTimeNTP = ntpTime;
     }
     timerSPICallback();
@@ -115,146 +114,122 @@ NtpClient f_ntpClient(onTimeReceivedCb);
 
 
 ////////////////////////////////////////////////////////////////////////////////
-void timerSPICallback(void)
-{
+void timerSPICallback(void) {
     DateTime dateTime = SystemClock.now();
 
-    requestForNTPTime(dateTime);
-    // First time run, dateTime invalid
-    if (f_UpdateTimeNTP == 0)
-    {
-        return;
-    }
-//    debugf("hour, minute: %i, %i\n", dateTime.Hour, dateTime.Minute);
-//    debugf("offset: %i\n", f_LocalTimeOffsetInHour);
+    if (!requestForNTPTime(dateTime)) debugf("Failed to request for NTP time!\n");
+    if (!requestForSunsetTime()) debugf("Failed to request for sunset (rise) time\n");
 
+    // First time run, dateTime invalid
+    if (f_UpdateTimeNTP == 0) return;
     uint32_t intensity = getIntensity(dateTime);
 
     // NOTE: BUG in SPI.cpp of SmingCore ignoring alternate function for SS.
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDO_U, 2); // SS
 
     f_spi.beginTransaction(f_spiSetting);
-#ifdef DEBUG
-    debugf("Data: %u\n\r", intensity);
-#endif
-    // TODO 4 -> constant common with stm8 as well
+    // TODO BB: 4 -> constant common with stm8 as well
     f_spi.transfer((uint8_t*) &intensity, 4);
     f_spi.endTransaction();
 }
 
-void requestForNTPTime(DateTime& rDateTime)
-{
+bool requestForNTPTime(DateTime& rDateTime) {
     // Check if needed
     if ((rDateTime.toUnixTime() > f_UpdateTimeNTP)
-            && ((rDateTime.toUnixTime() - f_UpdateTimeNTP)
-                    < TIME_UPDATE_INTERVAL_SEC)
-            // Not needed as in init first update (timing..)
-            && (f_UpdateTimeNTP != 0))
-    {
-        return;
-    }
+            && ((rDateTime.toUnixTime() - f_UpdateTimeNTP) < TIME_UPDATE_INTERVAL_SEC) && (f_UpdateTimeNTP != 0)) return true;
 
     // check connection
-    if (WifiStation.isConnected() == false)
-    {
-        time_t currentTimeSec = SystemClock.now().toUnixTime();
-        time_t endTimeSec = currentTimeSec + CONNECTION_TIMEOUT_SEC;
-        while ((WifiStation.connect() == false) && (currentTimeSec < endTimeSec))
-        {
-            currentTimeSec = SystemClock.now().toUnixTime();
-        }
+    if (WifiStation.isConnected() == false) {
+        time_t endTimeSec = SystemClock.now().toUnixTime() + CONNECTION_TIMEOUT_SEC;
+        while ((WifiStation.connect() == false) && (SystemClock.now().toUnixTime()  < endTimeSec)) delay(1);
+        endTimeSec = SystemClock.now().toUnixTime() + CONNECTION_TIMEOUT_SEC;
+        while ((WifiStation.isConnected() == false) && (SystemClock.now().toUnixTime() < endTimeSec)) delay(1);
+    }
 
-        currentTimeSec = SystemClock.now().toUnixTime();
-        endTimeSec = currentTimeSec + CONNECTION_TIMEOUT_SEC;
-        while ((WifiStation.isConnected() == false)
-                && (currentTimeSec < endTimeSec))
-        {
-            currentTimeSec = SystemClock.now().toUnixTime();
-        }
-    }
-    if (WifiStation.isConnected())
-    {
+    if (WifiStation.isConnected()) {
         f_ntpClient.requestTime();
+        return true;
     }
+    return false;
 }
 
-uint32_t getIntensity(const DateTime& rDateTime)
-{
-    uint32_t intensity = 0U;
+bool requestForSunsetTime(void) {
+    String url(SUNSET_SERVER);
+    url += String("json?lat=") + String(PRAGUE_LTG) + String("&lng=") + String(PRAGUE_LONG);
+    debugf("Sunset Request url: %s\n", url.c_str());
+    return g_HttpClient.downloadString(url, httpRequestDelegate);
+}
 
+int httpRequestDelegate(HttpConnection& client, bool successful) {
+    String response = client.getResponseString();
+    debugf("%s\n",response.c_str());
+    StaticJsonBuffer<500> jsonBuffer;
+    JsonObject& jsonObject = jsonBuffer.parseObject(response);
+    if (!jsonObject.success()) {
+        debugf("%s\n","parseObject() failed");
+        return successful;
+    }
+    const char* pSunrise = jsonObject["status"];
+    String pSunset = jsonObject[String("results")][String("sunset")];
+
+    uint8_t hour, min, sec = 0;
+    char tmpBuffer1[200];
+    char tmpBuffer2[200];
+//    nsscanf(pSunrise, "%i:%i:%i %s", hour, min, sec, tmpBuffer);
+//    g_SunriseInSec = hour * 3600 + min * 60 + sec;
+    nsscanf(response.c_str(), "%s%i:%i:%i%s",tmpBuffer1, hour, min, sec, tmpBuffer2);
+    g_SunsetInSec = hour * 3600 + 12 * 3600 + min * 60 + sec;
+    debugf("Parsed sunset: %i:%i\n",hour, min);
+    debugf("Parsed sunrise str: %s\n", pSunrise);
+    Serial.println(pSunrise);
+    return successful;
+}
+
+uint32_t getIntensity(const DateTime& rDateTime) {
+    uint32_t intensity = 0U;
     intensity = getIntensitySunset(rDateTime);
-//    debugf("Intensity sunset: %i\n",intensity);
+    debugf("Intensity sunset: %i\n",intensity);
     if (intensity == 0U)
     {
         intensity = getIntensitySunrise(rDateTime);
     }
-
 	intensity = ((intensity / LIGHT_INTENSITY_DIVIDE) >> 24) & 0xFF;
 	return intensity;
 }
 
 uint32_t getIntensitySunset(const DateTime& rDateTime)
 {
-    time_t timeSec = rDateTime.Hour * 3600U + rDateTime.Minute * 60U
-            + rDateTime.Second;
-
-    uint32_t sunsetInSec = getSunsetRiseInSec(rDateTime.Month, rDateTime.Day,
-            SUNSET_MONTHS_IN_MIN);
-//    debugf ("Sunset in %i:%i \n",sunsetInSec/3600, sunsetInSec/ 60 % 60);
-
-    uint8_t sunSethour = sunsetInSec / 3600U;
-    uint8_t sunSetMinutes = (sunsetInSec / 60U) % 60U;
+    time_t timeSec = rDateTime.Hour * 3600U + rDateTime.Minute * 60U + rDateTime.Second;
+    uint32_t sunsetInSec = getSunsetRiseInSec(rDateTime.Month, rDateTime.Day, SUNSET_MONTHS_IN_MIN);
+    debugf ("Sunset in %i:%i \n",sunsetInSec/3600, sunsetInSec/ 60 % 60);
 
     uint32_t startTimeSec = sunsetInSec - LIGHT_START_BEFORE_SUNSET_SEC;
     uint32_t endTimeSec = LIGHT_STOP_SEC;
 
-    uint32_t intensity = 0U;
-//    debugf ("startTime, endTime, time: %i, %i, %i\n", startTimeSec, endTimeSec, timeSec);
-
-    if (endTimeSec > startTimeSec)
-    {
-    intensity = computeTriangleRatioU32(timeSec, startTimeSec,
-            endTimeSec);
-    }
-    return intensity;
+    return endTimeSec > startTimeSec ? computeTriangleRatioU32(timeSec, startTimeSec, endTimeSec) : 0U;
 }
 
-uint32_t getIntensitySunrise(const DateTime& rDateTime)
-{
-    time_t timeSec = rDateTime.Hour * 3600U + rDateTime.Minute * 60U
-            + rDateTime.Second;
+uint32_t getIntensitySunrise(const DateTime& rDateTime) {
+    time_t timeSec = rDateTime.Hour * 3600U + rDateTime.Minute * 60U + rDateTime.Second;
 
     uint32_t sunRiseInSec = getSunsetRiseInSec(rDateTime.Month, rDateTime.Day, SUNRISE_MONTHS_IN_MIN);
-//    debugf ("Sunrise in %i:%i \n",sunRiseInSec/3600, sunRiseInSec / 60 % 60);
-
-    uint8_t sunRiseHour = sunRiseInSec / 3600U;
-    uint8_t sunRiseMinutes = (sunRiseInSec / 60U) % 60U;
+    debugf ("Sunrise in %i:%i \n",sunRiseInSec/3600, sunRiseInSec / 60 % 60);
 
     uint32_t startTimeSec = LIGHT_START_SEC;
     uint32_t endTimeSec = LIGHT_STOP_AFTER_SUNRISE + sunRiseInSec;
+    debugf ("startTime, endTime, time: %i, %i, %i\n", startTimeSec, endTimeSec, timeSec);
 
-//    debugf ("startTime, endTime, time: %i, %i, %i\n", startTimeSec, endTimeSec, timeSec);
-
-    uint32_t intensity = 0U;
-    if (endTimeSec > startTimeSec)
-    {
-        intensity = computeTriangleRatioU32(timeSec, startTimeSec, endTimeSec);
-    }
-    return intensity;
+    return endTimeSec > startTimeSec ? computeTriangleRatioU32(timeSec, startTimeSec, endTimeSec) : 0U;
 }
 
 static uint32_t getSunsetRiseInSec(const uint32_t month, const uint32_t day,
         const uint32_t* const pSunsetRiseInMin)
 {
-    if ((day > 31U) || (month > 12) || (month == 0U))
-    {
-        return 0;
-    }
-    if ((pSunsetRiseInMin != SUNSET_MONTHS_IN_MIN) && (pSunsetRiseInMin != SUNRISE_MONTHS_IN_MIN))
-    {
-        return 0;
-    }
-//    debugf("getSunsetRiseInSec: month: %u, day: %u\n", month, day);
+    if ((day > 31U) || (month > 12) || (month == 0U)) return 0;
+
+    if ((pSunsetRiseInMin != SUNSET_MONTHS_IN_MIN) && (pSunsetRiseInMin != SUNRISE_MONTHS_IN_MIN)) return 0;
+
+    debugf("getSunsetRiseInSec: month: %u, day: %u\n", month, day);
 
     uint32_t sunsetRiseInSec = pSunsetRiseInMin[month - 1] * 60;
     // / 30 due to ~ 30 day on average (day/30)
@@ -272,27 +247,21 @@ static uint32_t computeTriangleRatioU32(const uint32_t timeSec, const uint32_t s
 {
     uint32_t middleTimeSec = (endTimeSec >> 1) + (startTimeSec >> 1);
     uint32_t intensity = 0U;
-    if ((timeSec > startTimeSec) && (timeSec < middleTimeSec))
-    {
+    if ((timeSec > startTimeSec) && (timeSec < middleTimeSec)) {
         // note may be uint32_t, pay attention on order of arg. eval.
-        intensity = (timeSec - startTimeSec)
-                * (0xFFFFFFFF / (middleTimeSec - startTimeSec));
-    }
-    else if ((timeSec > middleTimeSec) && (timeSec < endTimeSec))
-    {
+        intensity = (timeSec - startTimeSec) * (0xFFFFFFFF / (middleTimeSec - startTimeSec));
+    } else if ((timeSec > middleTimeSec) && (timeSec < endTimeSec)) {
         intensity = (endTimeSec - timeSec)
                 * (0xFFFFFFFF / (middleTimeSec - startTimeSec));
     }
-    else
-    {
+    else {
     }
     return intensity;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Will be called when WiFi station was connected to AP
-void gotIP(IPAddress, IPAddress, IPAddress)
-{
+void gotIP(IPAddress, IPAddress, IPAddress) {
 	Serial.println("I'm CONNECTED");
 }
 
@@ -308,10 +277,6 @@ void init(void)
 {
     f_UpdateTimeNTP = 0;
 
-#ifdef DEBUG
-    Serial.begin(SERIAL_BAUD_RATE); // 115200 by default
-    Serial.systemDebugOutput(true); // Disable debug output to serial
-#endif
     System.setCpuFrequency(eCF_80MHz);
 
     WifiStation.config(WIFI_SSID, WIFI_PWD);
@@ -332,6 +297,7 @@ void init(void)
     f_TimerSPI.start(true);
 
     f_spi.begin();
+
     // Run our method when station was connected to AP (or not connected)
 }
 
@@ -339,21 +305,13 @@ void init(void)
 bool isSummerTime(const time_t pTime)
 {
     DateTime date(pTime);
-    if (((uint8_t)date.Month < 3) || (date.Month > 10))
-    {
-        return false;
-    }
-    if ((date.Month > 3) && (date.Month < 10))
-    {
-        return true;
-    }
+    if (((uint8_t)date.Month < 3) || (date.Month > 10)) return false;
 
-    if (date.Month == 3)
-    {
+    if ((date.Month > 3) && (date.Month < 10)) return true;
+
+    if (date.Month == 3) {
         return isSummerTimeMarch(date.Day, date.DayofWeek);
-    }
-    else
-    {
+    } else {
         return isSummerTimeOctober(date.Day, date.DayofWeek);
     }
     return false;
@@ -362,43 +320,21 @@ bool isSummerTime(const time_t pTime)
 bool isSummerTimeMarch(const uint8_t day, const uint8_t dayOfWeek)
 {
     // week with april
-    if (((7 - dayOfWeek) + day) > 31)
-    {
-        return true;
-    }
-
+    if (((7 - dayOfWeek) + day) > 31) return true;
     // week without april
-    if (dayOfWeek < 7)
-    {
-        return false;
-    }
-
+    if (dayOfWeek < 7) return false;
     // sunday
-    if ((day + 7) > 31 )
-    {
-        return true;
-    }
+    if ((day + 7) > 31 ) return true;
     return false;
 }
 
 bool isSummerTimeOctober(const uint8_t day, const uint8_t dayOfWeek)
 {
     // week with november
-    if (((7 - dayOfWeek) + day) > 31)
-    {
-        return false;
-    }
-
+    if (((7 - dayOfWeek) + day) > 31) return false;
     // week without november
-    if (dayOfWeek < 7)
-    {
-        return true;
-    }
-
+    if (dayOfWeek < 7) return true;
     // sunday
-    if ((day + 7) > 31 )
-    {
-        return false;
-    }
+    if ((day + 7) > 31 ) return false;
     return true;
 }
