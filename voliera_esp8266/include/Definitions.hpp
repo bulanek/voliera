@@ -12,6 +12,8 @@
 #define PRAGUE_LTG 50.08804
 #define PRAGUE_LONG 14.42076
 
+#define BUFFER_SIZE 500
+
 #define PIN_MISO
 #define PIN_GREEN 12
 

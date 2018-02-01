@@ -71,13 +71,13 @@ void main(void) {
             f_Counter = 0;
             memcpy((void*) f_Intensity, (void*) f_SPIBuffer, SPI_BUFFER_ARRAY_LENGTH);
             enableInterrupts();
-            if (f_Intensity[0] != 0U) {
+            if (f_Intensity[3] != 0U) {
                 EnableTimer();
-                TIM2->CCR1L = f_Intensity[0];
-                if (g_NumLights > 2) {
-                    TIM2->CCR2L = f_Intensity[1];
-                    TIM2->CCR3L = f_Intensity[2];
-                }
+                TIM2->CCR1L = f_Intensity[3];
+//               if (g_NumLights > 2) {
+//                    TIM2->CCR2L = f_Intensity[1];
+//                    TIM2->CCR3L = f_Intensity[2];
+//               }
             } else {
                 DisableTimer();
             }
@@ -161,13 +161,13 @@ void InitializeTimer(void) {
     TIM2->PSCR = 1U;
     // Duty
     TIM2->CCR1H = 0U;
-    TIM2->CCR1L = f_Intensity[0];
-    if (g_NumLights > 2) {
-        TIM2->CCR2H = 0U;
-        TIM2->CCR2L = f_Intensity[1];
-        TIM2->CCR3H = 0U;
-        TIM2->CCR3L = f_Intensity[2];
-    }
+    TIM2->CCR1L = f_Intensity[3];
+//    if (g_NumLights > 2) {
+//        TIM2->CCR2H = 0U;
+//        TIM2->CCR2L = f_Intensity[1];
+//        TIM2->CCR3H = 0U;
+//        TIM2->CCR3L = f_Intensity[2];
+//    }
 
     TIM2->CCMR2 |= TIM2_OCMODE_PWM2;
     TIM2->CCMR1 |= TIM2_OCMODE_PWM2;
