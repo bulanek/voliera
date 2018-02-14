@@ -6,7 +6,7 @@
 #define PIN_BLUE 3
 #define RGB_PORT GPIOD
 
-#define CONFIG_PIN  GPIO_PIN_0
+#define CONFIG_PIN  GPIO_PIN_1
 
 #define RUN_SPI_LED_PORT GPIOC
 #define RUN_SPI_LED_PIN GPIO_PIN_2

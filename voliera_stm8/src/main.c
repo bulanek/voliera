@@ -17,10 +17,16 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 #define SPI_BUFFER_ARRAY_LENGTH 4
+#define CHECK_NUMBER  0xAA
+#define NUM_LIGHTS_DEFAULT 1
 
 /* Private variables ---------------------------------------------------------*/
 /// Number of PWM outputs for light control. Now only 1 or 3
-uint8_t g_NumLights = 1U;
+struct {
+    uint8_t m_NumLights;
+    // Control number for flash read
+    uint8_t m_CheckNumber;
+} g_NumLights;
 
 /* Private function prototypes -----------------------------------------------*/
 static void Initialize(void);
@@ -31,12 +37,11 @@ static void InitializeSPI(void);
 static void InitializeTimer(void);
 static void InitializeFlash(void);
 
-
-static inline void CheckConfig(void);
-static inline void StartRunSPILed(void);
-static inline void StopRunSPILed(void);
-static inline void EnableTimer(void);
-static inline void DisableTimer(void);
+static void CheckConfig(void);
+static void StartRunSPILed(void);
+static void StopRunSPILed(void);
+static void EnableTimer(void);
+static void DisableTimer(void);
 
 /* Private functions ---------------------------------------------------------*/
 /* Public functions ----------------------------------------------------------*/
@@ -58,11 +63,24 @@ void main(void) {
     Initialize();
     enableInterrupts();
     CheckConfig();
-    g_NumLights = FLASH_ReadByte(EEPROM_DATA_MEMORY_START);
-    if ((g_NumLights < 1) || (g_NumLights > 3)) {
-        FLASH_EraseByte(EEPROM_DATA_MEMORY_START);
-        FLASH_ProgramBlock(0, FLASH_MEMTYPE_DATA, FLASH_PROGRAMMODE_STANDARD, &g_NumLights);
+    printf("3\n");
+//    g_NumLights.m_NumLights = FLASH_ReadByte(EEPROM_DATA_MEMORY_START);
+//    g_NumLights.m_CheckNumber = FLASH_ReadByte(EEPROM_DATA_MEMORY_START + 1);
+    printf("4\n");
+
+    if (g_NumLights.m_CheckNumber != CHECK_NUMBER)
+    {
+        printf("Check number not in flash memory, used default num of lights\n");
+        g_NumLights.m_CheckNumber = CHECK_NUMBER;
+        g_NumLights.m_NumLights = NUM_LIGHTS_DEFAULT;
+//        FLASH_EraseBlock(0, FLASH_MEMTYPE_DATA);
+//        FLASH_ProgramBlock(0, FLASH_MEMTYPE_DATA, FLASH_PROGRAMMODE_STANDARD, (uint8_t*)&g_NumLights);
     }
+    else
+    {
+        printf("Flash successfully read\n");
+    }
+    printf("Number of lights selected: %i\n", g_NumLights.m_NumLights);
     while (1) {
         wfi();
         StartRunSPILed();
@@ -89,6 +107,7 @@ void main(void) {
 }
 
 void Initialize(void) {
+    g_NumLights.m_NumLights = NUM_LIGHTS_DEFAULT;
     InitializeClock();
     InitializeGPIO();
     InitializeUART();
@@ -98,9 +117,9 @@ void Initialize(void) {
 }
 
 void InitializeClock(void) {
-    while ((CLK->ICKR & CLK_ICKR_HSIRDY) == 0); // wait until HSI ready
+//    while ((CLK->ICKR & CLK_ICKR_HSIRDY) == 0); // wait until HSI ready
     CLK->CKDIVR = 0; // clock divider.
-    CLK->PCKENR1 &= CLK_PCKENR1_TIM2 | CLK_PCKENR1_SPI;
+    CLK->PCKENR1 &= CLK_PCKENR1_TIM2 | CLK_PCKENR1_SPI | CLK_PCKENR1_UART1 | CLK_PCKENR1_UART2;
 }
 
 void InitializeGPIO(void) {
@@ -111,6 +130,8 @@ void InitializeGPIO(void) {
     // SPI NSS AF1
     GPIO_Init(GPIOA, GPIO_PIN_3, GPIO_MODE_IN_FL_NO_IT);
 
+//    GPIO_Init(GPIOD, GPIO_PIN_6, GPIO_MODE_IN_FL_IT);
+
     // Timer2 (channel 1)
     GPIO_Init(GPIOD, GPIO_PIN_4, GPIO_MODE_OUT_PP_HIGH_FAST);
     // Timer2 (channel 2) AF1
@@ -118,12 +139,14 @@ void InitializeGPIO(void) {
     // Timer2 (channel 3) AF1
     GPIO_Init(GPIOD, GPIO_PIN_2, GPIO_MODE_OUT_PP_HIGH_FAST);
     // Config pin
-    GPIO_Init(GPIOD, CONFIG_PIN, GPIO_MODE_IN_FL_NO_IT);
+//    GPIO_Init(GPIOD, CONFIG_PIN, GPIO_MODE_IN_FL_NO_IT);
     // PWM led pin
     GPIO_Init(GPIOC, PWM_PIN, GPIO_MODE_OUT_OD_HIZ_SLOW);
 
     // LED Run SPI
     GPIO_Init(RUN_SPI_LED_PORT, RUN_SPI_LED_PIN, GPIO_MODE_OUT_OD_HIZ_SLOW);
+
+
 }
 
 void InitializeSPI(void) {
@@ -162,12 +185,6 @@ void InitializeTimer(void) {
     // Duty
     TIM2->CCR1H = 0U;
     TIM2->CCR1L = f_Intensity[3];
-//    if (g_NumLights > 2) {
-//        TIM2->CCR2H = 0U;
-//        TIM2->CCR2L = f_Intensity[1];
-//        TIM2->CCR3H = 0U;
-//        TIM2->CCR3L = f_Intensity[2];
-//    }
 
     TIM2->CCMR2 |= TIM2_OCMODE_PWM2;
     TIM2->CCMR1 |= TIM2_OCMODE_PWM2;
@@ -189,19 +206,10 @@ void InitializeUART(void) {
     tmp = UART1->DR;
     //  Reset the UART registers to the reset values.
     //  8 Data bits.
-    UART1->CR1 &= (uint8_t) (~UART1_CR1_M);
-    /* Clear the Parity Control bit */
-    UART1->CR1 &= (uint8_t) (~( UART1_CR1_PCEN | UART1_CR1_PS));
     UART1->CR3 &= (uint8_t) (~UART1_CR3_STOP); // 1 stop bit
     UART1->BRR2 = 0x0b;      //  Set the baud rate registers to 115200 baud
     UART1->BRR1 = 0x08;      //  based upon a 16 MHz system clock.
-    // Disable Rx Tx while changing CPOL, CPHA,  LBCL
-    UART1->CR2 &= (uint8_t) (~(UART1_CR2_TEN | UART1_CR2_REN));
-    // set timing and clock output
-    UART1->CR3 |= (uint8_t) (UART1_CR3_CPHA | UART1_CR3_CPOL | UART1_CR3_LBCL);
-    //  Turn on the UART transmit, receive and the UART clock.
     UART1->CR2 |= (uint8_t) (UART1_CR2_TEN | UART1_CR2_REN);
-    UART1->CR3 |= (uint8_t) (UART1_CR3_CKEN);
 }
 
 static void InitializeFlash(void) {
@@ -212,16 +220,28 @@ static void InitializeFlash(void) {
 
 static void CheckConfig(void) {
     uint8_t numLights;
-    if ((GPIOD->IDR & CONFIG_PIN) == 0U) return;
+
+    if ((GPIOD->IDR & CONFIG_PIN) == 0U) {
+        printf("No configuration needed (config pin on 0)\n");
+        return;
+    }
     printf("Select number of light output [1-3] (Default: 1):\n ");
-    numLights = (uint8_t) getchar();
+    numLights = (uint8_t) getchar() ;
+    numLights -= 48U;
     if ((numLights < 1) || (numLights > 3)) {
         printf("Incorrect number of lights selected: %i\n", numLights);
         CheckConfig();
     }
-    g_NumLights = numLights;
-    FLASH_EraseByte(EEPROM_DATA_MEMORY_START);
-    FLASH_ProgramBlock(0, FLASH_MEMTYPE_DATA, FLASH_PROGRAMMODE_STANDARD, &g_NumLights);
+    else
+    {
+        printf("Selected %i lights\n",numLights);
+        g_NumLights.m_NumLights = numLights;
+        g_NumLights.m_CheckNumber = CHECK_NUMBER;
+    }
+
+//    FLASH_EraseBlock(2, FLASH_MEMTYPE_DATA);
+//    FLASH_ProgramBlock(0, FLASH_MEMTYPE_DATA, FLASH_PROGRAMMODE_STANDARD, (uint8_t*)&g_NumLights);
+
 }
 
 void StartRunSPILed(void) {
@@ -272,6 +292,6 @@ void SPI_IRQHandler(void) __interrupt(10) {
 }
 
 void assert_failed(uint8_t* file, uint32_t line) {
-    printf("Assertion occured in %s (%i)\n", (char*) file, line);
+    printf("Assertion occurred in %s (%i)\n", (char*) file, line);
     while (1);
 }
